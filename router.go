@@ -15,16 +15,18 @@ type RouterNode struct {
 	Children      []*RouterNode
 	Matcher       RouteMatcher
 	Route         map[string]*Route
-	RouteMatchers []RouteMatcher
+	RouteMatchers func() []RouteMatcher
 }
 
 func NewRouter() *RouterNode {
 	return &RouterNode{
 		Children: make([]*RouterNode, 0, 1),
 		Matcher:  &RouteMatcherRoot{},
-		RouteMatchers: []RouteMatcher{
-			&RouteMatcherPlaceholder{},
-			&RouteMatcherString{},
+		RouteMatchers: func() []RouteMatcher {
+			return []RouteMatcher{
+				&RouteMatcherPlaceholder{},
+				&RouteMatcherString{},
+			}
 		},
 	}
 }
@@ -62,7 +64,7 @@ func (r *RouterNode) add(route *Route, path string) error {
 		var err error
 
 		// Add the route to myself by splitting into tokens!
-		matcher, rem, err = MatchPathToMatcher(rem, route, r.RouteMatchers)
+		matcher, rem, err = MatchPathToMatcher(rem, route, r.RouteMatchers())
 		if err != nil {
 			return err
 		}
