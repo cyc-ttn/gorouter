@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 )
@@ -46,3 +47,16 @@ func (c *RouteContext) ShouldBindJSON(v interface{}) error {
 	return json.NewDecoder(c.R.Body).Decode(v)
 }
 
+func (c *RouteContext) FormFile(name string, maxMemory int64) (*multipart.FileHeader, error) {
+	if c.R.MultipartForm == nil {
+		if err := c.R.ParseMultipartForm(maxMemory); err != nil {
+			return nil, err
+		}
+	}
+	file, fileHeader, err := c.R.FormFile(name)
+	if err != nil {
+		return nil, err
+	}
+	file.Close()
+	return fileHeader, nil
+}
