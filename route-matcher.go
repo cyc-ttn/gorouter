@@ -40,6 +40,9 @@ func MatchPathToMatcher(path string, route *Route, tests []RouteMatcher) (RouteM
 type RouteMatcherRoot struct{}
 
 func (r *RouteMatcherRoot) Match(method, path string, params *RouteParamList) (string, bool) {
+	if len(path) == 0 {
+		return "", true
+	}
 	return path[1:], path[0] == '/'
 }
 func (r *RouteMatcherRoot) TokenMatch(path string, route *Route) (string, bool) {
