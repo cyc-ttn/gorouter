@@ -26,8 +26,8 @@ func (c *RouteContext) Status(status int) {
 }
 
 func (c *RouteContext) JSON(status int, v interface{}) error {
-	c.Status(status)
 	c.W.Header().Add("Content-Type", "application/json")
+	c.Status(status)
 	return json.NewEncoder(c.W).Encode(v)
 }
 
@@ -36,8 +36,8 @@ func (c *RouteContext) Redirect(status int, url string) {
 }
 
 func (c *RouteContext) String(status int, format string, data ...interface{}) {
-	c.Status(status)
 	c.W.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	c.Status(status)
 	if _, err := io.WriteString(c.W, fmt.Sprintf(format, data...)); err != nil {
 		log.Println(err)
 	}
