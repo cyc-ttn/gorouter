@@ -14,7 +14,7 @@ var (
 type RouterNode struct {
 	Children      []*RouterNode
 	Matcher       RouteMatcher
-	Route         map[string]*Route
+	Route         map[string]Route
 	RouteMatchers func() []RouteMatcher
 }
 
@@ -31,12 +31,12 @@ func NewRouter() *RouterNode {
 	}
 }
 
-func (r *RouterNode) AddRoute(route *Route) error {
-	return r.add(route, route.Path)
+func (r *RouterNode) AddRoute(route Route) error {
+	return r.add(route, route.GetPath())
 }
 
 // Adds a route to RouterNode
-func (r *RouterNode) add(route *Route, path string) error {
+func (r *RouterNode) add(route Route, path string) error {
 	if r.Matcher == nil {
 		return ErrInvalidMatcher
 	}
@@ -82,14 +82,14 @@ func (r *RouterNode) add(route *Route, path string) error {
 	return nil
 }
 
-func (r *RouterNode) addLeaf(route *Route) {
+func (r *RouterNode) addLeaf(route Route) {
 	if r.Route == nil {
-		r.Route = make(map[string]*Route)
+		r.Route = make(map[string]Route)
 	}
-	r.Route[route.Method] = route
+	r.Route[route.GetMethod()] = route
 }
 
-func (r *RouterNode) getLeaf(method string) *Route {
+func (r *RouterNode) getLeaf(method string) Route {
 	if r.Route == nil {
 		return nil
 	}
@@ -102,7 +102,7 @@ func (r *RouteParamList) Add(param string) {
 	*r = append(*r, param)
 }
 
-func (r *RouterNode) Match(method, path string, ctx *RouteContext) (*Route, error) {
+func (r *RouterNode) Match(method, path string, ctx *RouteContext) (Route, error) {
 
 	// If there is a # in the path, completely ignore it.
 	hashIdx := strings.Index(path, "#")
@@ -126,14 +126,14 @@ func (r *RouterNode) Match(method, path string, ctx *RouteContext) (*Route, erro
 
 	ctx.Params = make(map[string]string)
 	for i, p := range *params {
-		name := route.ParamNames[i]
+		name := route.GetParamNames()[i]
 		ctx.Params[name] = p
 	}
 
 	return route, nil
 }
 
-func (r *RouterNode) match(method, path string, params *RouteParamList) (*Route, error) {
+func (r *RouterNode) match(method, path string, params *RouteParamList) (Route, error) {
 	if r.Matcher == nil {
 		return nil, ErrInvalidMatcher
 	}

@@ -30,7 +30,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	route.HandlerFunc(&CustomRouteContext{
+	route.GetHandler()(&CustomRouteContext{
 		RouteContext: *ctx,
 		S:            s.S,
 	})
@@ -42,8 +42,8 @@ func getTestRoute(ctx *CustomRouteContext) {
 	ctx.String(http.StatusOK, "Nice!")
 }
 
-func NewGET(path string, handler CustomHandlerFunc) *Route {
-	return &Route{
+func NewGET(path string, handler CustomHandlerFunc) Route {
+	return &DefaultRoute{
 		Method: "GET",
 		Path:   path,
 		HandlerFunc: func(ctx interface{}) {
