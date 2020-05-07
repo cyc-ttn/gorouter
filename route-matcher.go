@@ -1,7 +1,7 @@
 package gorouter
 
 import (
-"errors"
+	"errors"
 )
 
 var (
@@ -15,19 +15,19 @@ type RouteMatcher interface {
 	Match(method, path string, params *RouteParamList) (string, bool)
 
 	// Tries to match the template strings for a token.
-	TokenMatch(token string, route *Route) (string, bool)
+	TokenMatch(token string, route Route) (string, bool)
 
 	// Get token attempts to retrieve the next token. Returns if it was successful or not.
 	// Router assumes the function will prefill the variables with the correct data
 	// and then return true.
-	GetToken(path string, route *Route) (string, bool)
+	GetToken(path string, route Route) (string, bool)
 }
 
 // MatchPathToMatcher tries to match a path to an effective RouteMatcher
 // through its GetToken method. As it goes through a list of matchers
 // sequentially and will accept the first acceptable matcher, the lower
 // priority matchers should be at the bottom.
-func MatchPathToMatcher(path string, route *Route, tests []RouteMatcher) (RouteMatcher, string, error) {
+func MatchPathToMatcher(path string, route Route, tests []RouteMatcher) (RouteMatcher, string, error) {
 	for _, t := range tests {
 		if rem, ok := t.GetToken(path, route); ok {
 			return t, rem, nil
@@ -45,10 +45,10 @@ func (r *RouteMatcherRoot) Match(method, path string, params *RouteParamList) (s
 	}
 	return path[1:], path[0] == '/'
 }
-func (r *RouteMatcherRoot) TokenMatch(path string, route *Route) (string, bool) {
+func (r *RouteMatcherRoot) TokenMatch(path string, route Route) (string, bool) {
 	return path[1:], path[0] == '/'
 }
-func (r *RouteMatcherRoot) GetToken(path string, route *Route) (string, bool) {
+func (r *RouteMatcherRoot) GetToken(path string, route Route) (string, bool) {
 	return r.Match("", path, nil)
 }
 
@@ -61,7 +61,7 @@ func (r *RouteMatcherString) Match(method, path string, params *RouteParamList) 
 	return r.TokenMatch(path, nil)
 }
 
-func (r *RouteMatcherString) TokenMatch(path string, route *Route) (string, bool) {
+func (r *RouteMatcherString) TokenMatch(path string, route Route) (string, bool) {
 	rlen := len(r.Path)
 	if rlen > len(path) {
 		return "", false
@@ -90,7 +90,7 @@ func (r *RouteMatcherString) TokenMatch(path string, route *Route) (string, bool
 	}
 }
 
-func (r *RouteMatcherString) GetToken(path string, route *Route) (string, bool) {
+func (r *RouteMatcherString) GetToken(path string, route Route) (string, bool) {
 	for i, p := range path {
 		switch p {
 		case '/':
@@ -105,7 +105,7 @@ func (r *RouteMatcherString) GetToken(path string, route *Route) (string, bool) 
 	return "", true
 }
 
-type RouteMatcherPlaceholder struct {}
+type RouteMatcherPlaceholder struct{}
 
 func (r *RouteMatcherPlaceholder) Match(method, path string, params *RouteParamList) (string, bool) {
 	// Use the string matcher's code to get the next path.
@@ -137,11 +137,11 @@ func (r *RouteMatcherPlaceholder) getTokenIndex(path string) int {
 // Token match is called when we are adding a route. It checks if the token
 // matches. Therefore, we need to add params into the route as well. In this sense,
 // it does the same thing as GetToken.
-func (r *RouteMatcherPlaceholder) TokenMatch(path string, route *Route) (string, bool) {
+func (r *RouteMatcherPlaceholder) TokenMatch(path string, route Route) (string, bool) {
 	return r.GetToken(path, route)
 }
 
-func (r *RouteMatcherPlaceholder) GetToken(path string, route *Route) (string, bool) {
+func (r *RouteMatcherPlaceholder) GetToken(path string, route Route) (string, bool) {
 	idx := r.getTokenIndex(path)
 	if idx == -1 {
 		return "", false

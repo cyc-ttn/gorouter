@@ -6,7 +6,7 @@ import (
 
 func TestRouterNode_AddRoute(t *testing.T) {
 
-	routes := []*Route{
+	routes := []*DefaultRoute{
 		{
 			Method: "GET",
 			Path:   "/users",
@@ -125,4 +125,3 @@ func TestRouterNode_AddRoute(t *testing.T) {
 		}
 	}
 }
-
