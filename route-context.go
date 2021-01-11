@@ -35,7 +35,15 @@ func (c *RouteContext) Redirect(status int, url string) {
 	http.Redirect(c.W, c.R, url, status)
 }
 
-func (c *RouteContext) String(status int, format string, data ...interface{}) {
+func (c *RouteContext) String(status int, str string) {
+	c.W.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	c.Status(status)
+	if _, err := io.WriteString(c.W, str); err != nil {
+		log.Println(err)
+	}
+}
+
+func (c *RouteContext) Stringf(status int, format string, data ...interface{}) {
 	c.W.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	c.Status(status)
 	if _, err := io.WriteString(c.W, fmt.Sprintf(format, data...)); err != nil {
