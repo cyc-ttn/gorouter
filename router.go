@@ -11,32 +11,32 @@ var (
 	ErrPathNotFound   = errors.New("path not found")
 )
 
-type RouterNode struct {
-	Children      []*RouterNode
-	Matcher       RouteMatcher
-	Route         map[string]Route
-	RouteMatchers func() []RouteMatcher
+type RouterNode[R any] struct {
+	Children      []*RouterNode[R]
+	Matcher       RouteMatcher[R]
+	Route         map[string]Route[R]
+	RouteMatchers func() []RouteMatcher[R]
 }
 
-func NewRouter() *RouterNode {
-	return &RouterNode{
-		Children: make([]*RouterNode, 0, 1),
-		Matcher:  &RouteMatcherRoot{},
-		RouteMatchers: func() []RouteMatcher {
-			return []RouteMatcher{
-				&RouteMatcherPlaceholder{},
-				&RouteMatcherString{},
+func NewRouter[R any]() *RouterNode[R] {
+	return &RouterNode[R]{
+		Children: make([]*RouterNode[R], 0, 1),
+		Matcher:  &RouteMatcherRoot[R]{},
+		RouteMatchers: func() []RouteMatcher[R] {
+			return []RouteMatcher[R]{
+				&RouteMatcherPlaceholder[R]{},
+				&RouteMatcherString[R]{},
 			}
 		},
 	}
 }
 
-func (r *RouterNode) AddRoute(route Route) error {
+func (r *RouterNode[R]) AddRoute(route Route[R]) error {
 	return r.add(route, route.GetPath())
 }
 
 // Adds a route to RouterNode
-func (r *RouterNode) add(route Route, path string) error {
+func (r *RouterNode[R]) add(route Route[R], path string) error {
 	if r.Matcher == nil {
 		return ErrInvalidMatcher
 	}
@@ -60,17 +60,17 @@ func (r *RouterNode) add(route Route, path string) error {
 	// Create matchers until there are no matchers left to create!
 	node := r
 	for rem != "" {
-		var matcher RouteMatcher
+		var matcher RouteMatcher[R]
 		var err error
 
 		// Add the route to myself by splitting into tokens!
-		matcher, rem, err = MatchPathToMatcher(rem, route, r.RouteMatchers())
+		matcher, rem, err = MatchPathToMatcher[R](rem, route, r.RouteMatchers())
 		if err != nil {
 			return err
 		}
 
-		newNode := &RouterNode{
-			Children:      make([]*RouterNode, 0, 1),
+		newNode := &RouterNode[R]{
+			Children:      make([]*RouterNode[R], 0, 1),
 			Matcher:       matcher,
 			RouteMatchers: r.RouteMatchers,
 		}
@@ -82,14 +82,14 @@ func (r *RouterNode) add(route Route, path string) error {
 	return nil
 }
 
-func (r *RouterNode) addLeaf(route Route) {
+func (r *RouterNode[R]) addLeaf(route Route[R]) {
 	if r.Route == nil {
-		r.Route = make(map[string]Route)
+		r.Route = make(map[string]Route[R])
 	}
 	r.Route[route.GetMethod()] = route
 }
 
-func (r *RouterNode) getLeaf(method string) Route {
+func (r *RouterNode[R]) getLeaf(method string) Route[R] {
 	if r.Route == nil {
 		return nil
 	}
@@ -102,7 +102,7 @@ func (r *RouteParamList) Add(param string) {
 	*r = append(*r, param)
 }
 
-func (r *RouterNode) Match(method, path string, ctx *RouteContext) (Route, error) {
+func (r *RouterNode[R]) Match(method, path string, ctx *RouteContext) (Route[R], error) {
 
 	// If there is a # in the path, completely ignore it.
 	hashIdx := strings.Index(path, "#")
@@ -133,7 +133,7 @@ func (r *RouterNode) Match(method, path string, ctx *RouteContext) (Route, error
 	return route, nil
 }
 
-func (r *RouterNode) match(method, path string, params *RouteParamList) (Route, error) {
+func (r *RouterNode[R]) match(method, path string, params *RouteParamList) (Route[R], error) {
 	if r.Matcher == nil {
 		return nil, ErrInvalidMatcher
 	}

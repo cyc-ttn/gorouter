@@ -10,7 +10,7 @@ type Services struct{}
 
 type Server struct {
 	S *Services
-	R *RouterNode
+	R *RouterNode[*CustomRouteContext]
 }
 
 type CustomRouteContext struct {
@@ -36,19 +36,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-type CustomHandlerFunc func(ctx *CustomRouteContext)
+type CustomHandlerFunc = HandlerFunc[*CustomRouteContext]
 
 func getTestRoute(ctx *CustomRouteContext) {
 	ctx.String(http.StatusOK, "Nice!")
 }
 
-func NewGET(path string, handler CustomHandlerFunc) Route {
-	return &DefaultRoute{
-		Method: "GET",
-		Path:   path,
-		HandlerFunc: func(ctx interface{}) {
-			handler(ctx.(*CustomRouteContext))
-		},
+func NewGET(path string, handler CustomHandlerFunc) Route[*CustomRouteContext] {
+	return &DefaultRoute[*CustomRouteContext]{
+		Method:      "GET",
+		Path:        path,
+		HandlerFunc: handler,
 	}
 }
 
@@ -60,7 +58,7 @@ func main() {
 
 	s := &Server{
 		S: &Services{},
-		R: NewRouter(),
+		R: NewRouter[*CustomRouteContext](),
 	}
 	s.R.AddRoute(NewGET("/test-route", getTestRoute))
 	http.ListenAndServe(":8080", s)
