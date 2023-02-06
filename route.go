@@ -1,38 +1,38 @@
 package gorouter
 
-type Route interface {
+type Route[R any] interface {
 	GetMethod() string
 	GetPath() string
-	GetHandler() HandlerFunc
+	GetHandler() HandlerFunc[R]
 	GetParamNames() []string
 	AddParamName(string)
 }
 
-type HandlerFunc func(ctx interface{})
+type HandlerFunc[R any] func(ctx R)
 
-type DefaultRoute struct {
+type DefaultRoute[R any] struct {
 	Method      string
 	Path        string
-	HandlerFunc HandlerFunc
+	HandlerFunc HandlerFunc[R]
 	ParamNames  []string
 }
 
-func (r *DefaultRoute) GetMethod() string {
+func (r *DefaultRoute[R]) GetMethod() string {
 	return r.Method
 }
 
-func (r *DefaultRoute) GetPath() string {
+func (r *DefaultRoute[R]) GetPath() string {
 	return r.Path
 }
 
-func (r *DefaultRoute) GetHandler() HandlerFunc {
+func (r *DefaultRoute[R]) GetHandler() HandlerFunc[R] {
 	return r.HandlerFunc
 }
 
-func (r *DefaultRoute) GetParamNames() []string {
+func (r *DefaultRoute[R]) GetParamNames() []string {
 	return r.ParamNames
 }
 
-func (r *DefaultRoute) AddParamName(name string) {
+func (r *DefaultRoute[R]) AddParamName(name string) {
 	r.ParamNames = append(r.ParamNames, name)
 }

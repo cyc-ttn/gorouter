@@ -6,7 +6,7 @@ import (
 
 func TestRouterNode_AddRoute(t *testing.T) {
 
-	routes := []*DefaultRoute{
+	routes := []*DefaultRoute[any]{
 		{
 			Method: "GET",
 			Path:   "/users",
@@ -31,7 +31,7 @@ func TestRouterNode_AddRoute(t *testing.T) {
 
 	// This should make a tree with two children (users and user) and under user, there should be one more
 	// leaf. A total of three nodes.
-	router := NewRouter()
+	router := NewRouter[any]()
 	for _, r := range routes {
 		if err := router.AddRoute(r); err != nil {
 			t.Fatal(err)
