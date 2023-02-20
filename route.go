@@ -3,17 +3,15 @@ package gorouter
 type Route[R any] interface {
 	GetMethod() string
 	GetPath() string
-	GetHandler() HandlerFunc[R]
+	GetHandler() func(R)
 	GetParamNames() []string
 	AddParamName(string)
 }
 
-type HandlerFunc[R any] func(ctx R)
-
 type DefaultRoute[R any] struct {
 	Method      string
 	Path        string
-	HandlerFunc HandlerFunc[R]
+	HandlerFunc func(R)
 	ParamNames  []string
 }
 
@@ -25,7 +23,7 @@ func (r *DefaultRoute[R]) GetPath() string {
 	return r.Path
 }
 
-func (r *DefaultRoute[R]) GetHandler() HandlerFunc[R] {
+func (r *DefaultRoute[R]) GetHandler() func(R) {
 	return r.HandlerFunc
 }
 
