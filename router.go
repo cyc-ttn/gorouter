@@ -151,11 +151,16 @@ func (r *RouterNode[R]) match(method, path string, params *RouteParamList) (Rout
 	}
 
 	for _, c := range r.Children {
-		r, err := c.match(method, rem, params)
+		// We only want to update the params list *if* there is no error.
+		newParams := &RouteParamList{}
+		r, err := c.match(method, rem, newParams)
 		if err == ErrInvalidMatcher {
 			return nil, ErrInvalidMatcher
 		}
 		if err == nil {
+			// We have found a match. Therefore, we need to update the
+			// params list.
+			*params = append(*params, *newParams...)
 			return r, nil
 		}
 	}
